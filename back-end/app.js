@@ -21,6 +21,53 @@ mongoose
 // load the dataabase models we want to deal with
 const { Message } = require('./models/Message')
 const { User } = require('./models/User')
+const { About } = require('./models/About')
+
+app.get('/api/about', async (req, res) => {
+  try {
+    const about = await About.findOne()
+    if (!about) {
+      return res.status(404).json({
+        error: 'About content not found',
+        status: 'no about document exists yet',
+      })
+    }
+    res.json({
+      title: about.title,
+      paragraphs: about.paragraphs,
+      imageUrl: about.imageUrl,
+      status: 'all good',
+    })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({
+      error: err,
+      status: 'failed to retrieve About content',
+    })
+  }
+})
+
+app.get('/api/about/seed', async (req, res) => {
+  try {
+    const existing = await About.findOne();
+    if (existing) {
+      return res.json({ status: 'already exists', about: existing });
+    }
+    const created = await About.create({
+      title: 'About Me',
+      paragraphs: [
+        "Hi, my name is Jeffrey and I am a senior at NYU studying Finance and Computer Science. I am from West Windsor, NJ.",
+        "One of my hobbies is to run. I first started to run when I was in 6th grade and currently run for NYU's Cross Country and Track & Field teams.",
+        "Another one of my hobbies is to collect New Yorker Puzzles. I currently have three puzzles built."
+      ] ,
+      imageUrl: '/photo.jpg'
+    });
+    res.json({ status: 'seeded', about: created });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'seed failed' });
+  }
+});
 
 // a route to handle fetching all messages
 app.get('/messages', async (req, res) => {
